@@ -30,7 +30,7 @@ enum GCodeFlavor : unsigned char {
 };
 
 enum PrintHostType {
-    htOctoPrint, htDuet, htFlashAir, htAstroBox
+    htRepetierServer, htOctoPrint, htDuet, htFlashAir, htAstroBox
 };
 
 enum InfillPattern {
@@ -94,6 +94,7 @@ template<> inline const t_config_enum_values& ConfigOptionEnum<GCodeFlavor>::get
 template<> inline const t_config_enum_values& ConfigOptionEnum<PrintHostType>::get_enum_values() {
     static t_config_enum_values keys_map;
     if (keys_map.empty()) {
+        keys_map["repetierserver"]  = htRepetierServer;
         keys_map["octoprint"]       = htOctoPrint;
         keys_map["duet"]            = htDuet;
         keys_map["flashair"]        = htFlashAir;
@@ -898,6 +899,7 @@ class HostConfig : public StaticPrintConfig
 public:
     ConfigOptionEnum<PrintHostType> host_type;
     ConfigOptionString              print_host;
+    ConfigOptionString		    printer_name;
     ConfigOptionString              printhost_apikey;
     ConfigOptionString              printhost_cafile;
     ConfigOptionString              serial_port;
@@ -908,6 +910,7 @@ protected:
     {
         OPT_PTR(host_type);
         OPT_PTR(print_host);
+	OPT_PTR(printer_name);
         OPT_PTR(printhost_apikey);
         OPT_PTR(printhost_cafile);
         OPT_PTR(serial_port);
