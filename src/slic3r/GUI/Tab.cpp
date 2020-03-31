@@ -1827,6 +1827,13 @@ void TabPrinter::build_printhost(ConfigOptionsGroup *optgroup)
 
         optgroup->append_line(line);
     }
+
+    const auto printhost_printername_hint = _utf8(L("Only some hosts services require a printer name to be sepcified. e.g. RepetierServer "));
+
+    option = optgroup->get_option("printhost_printername");
+    option.opt.width = Field::def_width_wider();
+    optgroup->append_single_option_line(option);
+
 }
 
 void TabPrinter::build()

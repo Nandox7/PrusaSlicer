@@ -156,6 +156,8 @@ set(SLIC3R_GUI_SOURCES
     Utils/FixModelByWin10.hpp
     Utils/OctoPrint.cpp
     Utils/OctoPrint.hpp
+    Utils/RepetierServer.cpp
+    Utils/RepetierServer.hpp
     Utils/Duet.cpp
     Utils/Duet.hpp
     Utils/FlashAir.cpp

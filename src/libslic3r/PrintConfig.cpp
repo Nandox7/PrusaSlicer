@@ -114,6 +114,13 @@ void PrintConfigDef::init_common_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionString(""));
     
+    def = this->add("printhost_printername", coString);
+    def->label = L("Server Printer Name");
+    def->tooltip = L("Name of the printer as defined in the host server. "
+                   "Used with hosts like RepetierServer that support multiple printers.");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionString(""));
+
     def = this->add("elefant_foot_compensation", coFloat);
     def->label = L("Elephant foot compensation");
     def->category = L("Advanced");
@@ -1334,10 +1341,12 @@ void PrintConfigDef::init_fff_params()
                    "the kind of the host.");
     def->enum_keys_map = &ConfigOptionEnum<PrintHostType>::get_enum_values();
     def->enum_values.push_back("octoprint");
+    def->enum_values.push_back("repetierserver");
     def->enum_values.push_back("duet");
     def->enum_values.push_back("flashair");
     def->enum_values.push_back("astrobox");
     def->enum_labels.push_back("OctoPrint");
+    def->enum_labels.push_back("RepetierServer");
     def->enum_labels.push_back("Duet");
     def->enum_labels.push_back("FlashAir");
     def->enum_labels.push_back("AstroBox");

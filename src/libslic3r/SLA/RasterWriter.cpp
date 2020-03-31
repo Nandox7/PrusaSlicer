@@ -108,7 +108,8 @@ void append_full_config(const DynamicPrintConfig &cfg, std::map<std::string, std
         "compatible_prints"sv,
         "print_host"sv,
         "printhost_apikey"sv,
-        "printhost_cafile"sv
+        "printhost_cafile"sv,
+        "printerhost_printername"sv
     };
     
     assert(std::is_sorted(banned_keys.begin(), banned_keys.end()));

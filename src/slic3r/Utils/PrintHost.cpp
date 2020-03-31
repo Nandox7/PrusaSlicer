@@ -13,6 +13,7 @@
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/Channel.hpp"
 #include "OctoPrint.hpp"
+#include "RepetierServer.hpp"
 #include "Duet.hpp"
 #include "FlashAir.hpp"
 #include "AstroBox.hpp"
@@ -44,6 +45,7 @@ PrintHost* PrintHost::get_print_host(DynamicPrintConfig *config)
 
         switch (host_type) {
             case htOctoPrint: return new OctoPrint(config);
+            case htRepetierServer: return new RepetierServer(config);
             case htDuet:      return new Duet(config);
             case htFlashAir:  return new FlashAir(config);
             case htAstroBox:  return new AstroBox(config);
