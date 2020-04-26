@@ -57,6 +57,7 @@ endmacro()
 
 ExternalProject_Add(dep_boost
     EXCLUDE_FROM_ALL 1
+    DOWNLOAD_DIR Downloads
     URL "https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz"
     URL_HASH SHA256=882b48708d211a5f48e60b0124cf5863c1534cd544ecd0664bb534a4b5d506e9
     BUILD_IN_SOURCE 1

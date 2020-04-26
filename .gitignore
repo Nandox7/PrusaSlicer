@@ -11,3 +11,15 @@ xs/MANIFEST.bak
 xs/assertlib*
 .init_bundle.ini
 local-lib
+usr/*
+usr/local/include/boost-1_70/boost/algorithm/cxx11/is_partitioned.hpp
+CMakeSettings.json
+deps/deps-windows.cmake
+deps/deps-windows.cmake
+.vs/VSWorkspaceState.json
+.vs/slnx.sqlite
+.vs/PrusaSlicer/v16/Browse.VC.db
+.vs/PrusaSlicer/v16/.suo
+.vs/ProjectSettings.json
+.vs/CMake Overview
+deps/deps-windows.cmake
