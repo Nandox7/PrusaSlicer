@@ -36,41 +36,24 @@ struct GroupAndCategory {
     wxString        category;
 };
 
-// fuzzy_match flag
-enum FMFlag
-{
-    fmUndef = 0, // didn't find 
-    fmOptKey,
-    fmLabel,
-    fmLabelLocal,
-    fmGroup,
-    fmGroupLocal,
-    fmCategory,
-    fmCategoryLocal
-};
-
 struct Option {
     bool operator<(const Option& other) const { return other.label > this->label; }
     bool operator>(const Option& other) const { return other.label < this->label; }
 
-    std::string     opt_key;
+    // Fuzzy matching works at a character level. Thus matching with wide characters is a safer bet than with short characters,
+    // though for some languages (Chinese?) it may not work correctly.
+    std::wstring    opt_key;
     Preset::Type    type {Preset::TYPE_INVALID};
-    wxString        label;
-    wxString        label_local;
-    wxString        group;
-    wxString        group_local;
-    wxString        category;
-    wxString        category_local;
-
-    FMFlag fuzzy_match_simple(char const *search_pattern) const;
-    FMFlag fuzzy_match_simple(const wxString& search) const;
-    FMFlag fuzzy_match_simple(const std::string &search) const;
-    FMFlag fuzzy_match(char const *search_pattern, int &outScore) const;
-    FMFlag fuzzy_match(const wxString &search, int &outScore) const ;
-    FMFlag fuzzy_match(const std::string &search, int &outScore) const ;
+    std::wstring    label;
+    std::wstring    label_local;
+    std::wstring    group;
+    std::wstring    group_local;
+    std::wstring    category;
+    std::wstring    category_local;
 };
 
 struct FoundOption {
+	// UTF8 encoding, to be consumed by ImGUI by reference.
     std::string     label;
     std::string     marked_label;
     std::string     tooltip;
@@ -83,9 +66,9 @@ struct FoundOption {
 
 struct OptionViewParameters
 {
-    bool type       {false};
     bool category   {false};
     bool group      {true };
+    bool english    {false};
 
     int  hovered_id {-1};
 };
@@ -94,6 +77,7 @@ class OptionsSearcher
 {
     std::string                             search_line;
     std::map<std::string, GroupAndCategory> groups_and_categories;
+    PrinterTechnology                       printer_technology;
 
     std::vector<Option>                     options {};
     std::vector<FoundOption>                found {};
@@ -106,7 +90,7 @@ class OptionsSearcher
     }
     void sort_found() {
         std::sort(found.begin(), found.end(), [](const FoundOption& f1, const FoundOption& f2) {
-            return f1.outScore > f2.outScore; });
+            return f1.outScore > f2.outScore || (f1.outScore == f2.outScore && f1.label < f2.label); });
     };
 
     size_t options_size() const { return options.size(); }
@@ -137,6 +121,8 @@ public:
     const std::vector<FoundOption>& found_options() { return found; }
     const GroupAndCategory&         get_group_and_category (const std::string& opt_key) { return groups_and_categories[opt_key]; }
     std::string& search_string() { return search_line; }
+
+    void set_printer_technology(PrinterTechnology pt) { printer_technology = pt; }
 };
 
 
@@ -184,9 +170,9 @@ class SearchDialog : public GUI::DPIDialog
 
     wxTextCtrl*     search_line    { nullptr };
     wxListBox*      search_list    { nullptr };
-    wxCheckBox*     check_type     { nullptr };
     wxCheckBox*     check_category { nullptr };
     wxCheckBox*     check_group    { nullptr };
+    wxCheckBox*     check_english  { nullptr };
 
     OptionsSearcher* searcher;
 
