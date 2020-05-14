@@ -38,6 +38,7 @@
 #include "libslic3r/Model.hpp"
 #include "libslic3r/SLA/Hollowing.hpp"
 #include "libslic3r/SLA/SupportPoint.hpp"
+#include "libslic3r/SLA/ReprojectPointsOnMesh.hpp"
 #include "libslic3r/Polygon.hpp"
 #include "libslic3r/Print.hpp"
 #include "libslic3r/PrintConfig.hpp"
@@ -3122,6 +3123,8 @@ void Plater::priv::reload_from_disk()
                     std::swap(old_model_object->volumes[sel_v.volume_idx], old_model_object->volumes.back());
                     old_model_object->delete_volume(old_model_object->volumes.size() - 1);
                     old_model_object->ensure_on_bed();
+
+                    sla::reproject_points_and_holes(old_model_object);
                 }
             }
         }
@@ -3177,6 +3180,7 @@ void Plater::priv::fix_through_netfabb(const int obj_idx, const int vol_idx/* = 
     Plater::TakeSnapshot snapshot(q, _L("Fix Throught NetFabb"));
 
     fix_model_by_win10_sdk_gui(*model.objects[obj_idx], vol_idx);
+    sla::reproject_points_and_holes(model.objects[obj_idx]);
     this->update();
     this->object_list_changed();
     this->schedule_background_process();
@@ -5364,6 +5368,9 @@ void Plater::paste_from_clipboard()
 void Plater::search(bool plater_is_active)
 {
     if (plater_is_active) {
+        // plater should be focused for correct navigation inside search window 
+        this->SetFocus();
+
         wxKeyEvent evt;
 #ifdef __APPLE__
         evt.m_keyCode = 'f';

@@ -574,6 +574,7 @@ public:
 
     bool is_layers_editing_enabled() const;
     bool is_layers_editing_allowed() const;
+    bool is_search_pressed() const;
 
     void reset_layer_height_profile();
     void adaptive_layer_height_profile(float quality_factor);
@@ -753,6 +754,7 @@ private:
 #if ENABLE_RENDER_SELECTION_CENTER
     void _render_selection_center() const;
 #endif // ENABLE_RENDER_SELECTION_CENTER
+    void _check_and_update_toolbar_icon_scale() const;
     void _render_overlays() const;
     void _render_warning_texture() const;
     void _render_legend_texture() const;
