@@ -190,6 +190,29 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_S
         event.Skip();
     });
 
+    /*
+    Bind(wxEVT_SYS_COLOUR_CHANGED, [this](wxSysColourChangedEvent& event)
+    {
+        bool recreate_gui = false;
+        {
+            // the dialog needs to be destroyed before the call to recreate_gui()
+            // or sometimes the application crashes into wxDialogBase() destructor
+            // so we put it into an inner scope
+            wxMessageDialog dialog(nullptr,
+                                   _L("System color mode was changed. "
+                                      "It is possible to update the Slicer in respect to the system mode.") + "\n" +
+                                   _L("You will lose content of the plater.") + "\n\n" +
+                                   _L("Do you want to proceed?"),
+                                   wxString(SLIC3R_APP_NAME) + " - " + _L("Switching system color mode"),
+                                   wxICON_QUESTION | wxOK | wxCANCEL);
+            recreate_gui = dialog.ShowModal() == wxID_OK;
+        }
+        if (recreate_gui)
+            wxGetApp().recreate_GUI(_L("Changing of an application in respect to the system mode") + dots);
+        event.Skip();
+    });
+    */
+
     wxGetApp().persist_window_geometry(this, true);
 
     update_ui_from_settings();    // FIXME (?)
@@ -242,7 +265,7 @@ void MainFrame::shutdown()
     // Stop the background thread of the removable drive manager, so that no new updates will be sent to the Plater.
     wxGetApp().removable_drive_manager()->shutdown();
 	//stop listening for messages from other instances
-	wxGetApp().other_instance_message_handler()->shutdown();
+	wxGetApp().other_instance_message_handler()->shutdown(this);
     // Save the slic3r.ini.Usually the ini file is saved from "on idle" callback,
     // but in rare cases it may not have been called yet.
     wxGetApp().app_config->save();
@@ -554,6 +577,28 @@ void MainFrame::on_dpi_changed(const wxRect &suggested_rect)
     this->Maximize(is_maximized);
 }
 
+void MainFrame::on_sys_color_changed()
+{
+    wxBusyCursor wait;
+
+    // update label colors in respect to the system mode
+    wxGetApp().init_label_colours();
+
+    wxGetApp().preset_bundle->load_default_preset_bitmaps();
+
+    // update Plater
+    wxGetApp().plater()->sys_color_changed();
+
+    // update Tabs
+    for (auto tab : wxGetApp().tabs_list)
+        tab->sys_color_changed();
+
+    // msw_rescale_menu updates just icons, so use it
+    wxMenuBar* menu_bar = this->GetMenuBar();
+    for (size_t id = 0; id < menu_bar->GetMenuCount(); id++)
+        msw_rescale_menu(menu_bar->GetMenu(id));
+}
+
 void MainFrame::init_menubar()
 {
 #ifdef __APPLE__
@@ -621,6 +666,10 @@ void MainFrame::init_menubar()
         wxMenu* import_menu = new wxMenu();
         append_menu_item(import_menu, wxID_ANY, _(L("Import STL/OBJ/AM&F/3MF")) + dots + "\tCtrl+I", _(L("Load a model")),
             [this](wxCommandEvent&) { if (m_plater) m_plater->add_model(); }, "import_plater", nullptr,
+            [this](){return m_plater != nullptr; }, this);
+        
+        append_menu_item(import_menu, wxID_ANY, _L("Import STL (imperial units)"), _L("Load an model saved with imperial units"),
+            [this](wxCommandEvent&) { if (m_plater) m_plater->add_model(true); }, "import_plater", nullptr,
             [this](){return m_plater != nullptr; }, this);
         
         append_menu_item(import_menu, wxID_ANY, _(L("Import SL1 archive")) + dots, _(L("Load an SL1 output archive")),
@@ -1434,6 +1483,12 @@ SettingsDialog::SettingsDialog(MainFrame* mainframe)
             case '2': { m_main_frame->select_tab(1); break; }
             case '3': { m_main_frame->select_tab(2); break; }
             case '4': { m_main_frame->select_tab(3); break; }
+#ifdef __APPLE__
+            case 'f':
+#else /* __APPLE__ */
+            case WXK_CONTROL_F:
+#endif /* __APPLE__ */
+            case 'F': { m_main_frame->plater()->search(false); break; }
             default:break;
             }
         }
