@@ -1,6 +1,7 @@
 #include "Preferences.hpp"
 #include "AppConfig.hpp"
 #include "OptionsGroup.hpp"
+#include "GUI_App.hpp"
 #include "I18N.hpp"
 
 namespace Slic3r {
@@ -179,10 +180,28 @@ void PreferencesDialog::build()
 
 	create_settings_mode_widget();
 
+#if ENABLE_ENVIRONMENT_MAP
+	m_optgroup_render = std::make_shared<ConfigOptionsGroup>(this, _(L("Render")));
+	m_optgroup_render->label_width = 40;
+	m_optgroup_render->m_on_change = [this](t_config_option_key opt_key, boost::any value) {
+		m_values[opt_key] = boost::any_cast<bool>(value) ? "1" : "0";
+	};
+
+	def.label = L("Use environment map");
+	def.type = coBool;
+	def.tooltip = L("If enabled, renders object using the environment map.");
+	def.set_default_value(new ConfigOptionBool{ app_config->get("use_environment_map") == "1" });
+	option = Option(def, "use_environment_map");
+	m_optgroup_render->append_single_option_line(option);
+#endif // ENABLE_ENVIRONMENT_MAP
+
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(m_optgroup_general->sizer, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, 10);
 	sizer->Add(m_optgroup_camera->sizer, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, 10);
 	sizer->Add(m_optgroup_gui->sizer, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, 10);
+#if ENABLE_ENVIRONMENT_MAP
+	sizer->Add(m_optgroup_render->sizer, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, 10);
+#endif // ENABLE_ENVIRONMENT_MAP
 
     SetFont(wxGetApp().normal_font());
 
@@ -215,6 +234,7 @@ void PreferencesDialog::accept()
 	    }
 	}
 
+#if !ENABLE_LAYOUT_NO_RESTART
 	if (m_settings_layout_changed) {
 		// the dialog needs to be destroyed before the call to recreate_gui()
 		// or sometimes the application crashes into wxDialogBase() destructor
@@ -236,6 +256,7 @@ void PreferencesDialog::accept()
 			return;
 		}
 	}
+#endif // !ENABLE_LAYOUT_NO_RESTART
 
 	for (std::map<std::string, std::string>::iterator it = m_values.begin(); it != m_values.end(); ++it)
 		app_config->set(it->first, it->second);

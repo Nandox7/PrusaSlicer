@@ -3,6 +3,8 @@
 #include "slic3r/GUI/GLCanvas3D.hpp"
 #include "slic3r/GUI/Gizmos/GLGizmosCommon.hpp"
 
+#include "libslic3r/Model.hpp"
+
 #include <numeric>
 
 #include <GL/glew.h>
@@ -26,8 +28,7 @@ bool GLGizmoFlatten::on_init()
 
 void GLGizmoFlatten::on_set_state()
 {
-    if (m_state == On && is_plane_update_necessary())
-        update_planes();
+
 }
 
 CommonGizmosDataID GLGizmoFlatten::on_get_requirements() const
@@ -79,7 +80,8 @@ void GLGizmoFlatten::on_render() const
             else
                 glsafe(::glColor4f(0.9f, 0.9f, 0.9f, 0.5f));
 
-            m_planes[i].vbo.render();
+            if (m_planes[i].vbo.has_VBOs())
+                m_planes[i].vbo.render();
         }
         glsafe(::glPopMatrix());
     }

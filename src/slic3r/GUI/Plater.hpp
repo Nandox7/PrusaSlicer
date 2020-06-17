@@ -25,9 +25,12 @@ namespace Slic3r {
 
 class Model;
 class ModelObject;
+class ModelInstance;
 class Print;
 class SLAPrint;
 enum SLAPrintObjectStep : unsigned int;
+
+using ModelInstancePtrs = std::vector<ModelInstance*>;
 
 namespace UndoRedo {
     class Stack;
@@ -312,15 +315,24 @@ public:
     void sys_color_changed();
 
     bool init_view_toolbar();
+    bool init_collapse_toolbar();
 
     const Camera& get_camera() const;
     Camera& get_camera();
+
+#if ENABLE_ENVIRONMENT_MAP
+    void init_environment_texture();
+    unsigned int get_environment_texture_id() const;
+#endif // ENABLE_ENVIRONMENT_MAP
 
     const Bed3D& get_bed() const;
     Bed3D& get_bed();
 
     const GLToolbar& get_view_toolbar() const;
     GLToolbar& get_view_toolbar();
+
+    const GLToolbar& get_collapse_toolbar() const;
+    GLToolbar& get_collapse_toolbar();
 
     const Mouse3DController& get_mouse3d_controller() const;
     Mouse3DController& get_mouse3d_controller();

@@ -5,7 +5,6 @@
 #include <memory>
 #include <chrono>
 
-#include "3DScene.hpp"
 #include "GLToolbar.hpp"
 #include "GLShader.hpp"
 #include "Event.hpp"
@@ -14,6 +13,8 @@
 #include "GUI_ObjectLayers.hpp"
 #include "GLSelectionRectangle.hpp"
 #include "MeshUtils.hpp"
+
+#include "libslic3r/Slicing.hpp"
 
 #include <float.h>
 
@@ -33,13 +34,16 @@ class wxGLContext;
 
 namespace Slic3r {
 
-class Bed3D;
 struct Camera;
 class BackgroundSlicingProcess;
 class GCodePreviewData;
 struct ThumbnailData;
-struct SlicingParameters;
-enum LayerHeightEditActionType : unsigned int;
+class ModelObject;
+class ModelInstance;
+class PrintObject;
+class Print;
+class SLAPrint;
+namespace CustomGCode { struct Item; }
 
 namespace GUI {
 
@@ -448,7 +452,6 @@ private:
     mutable GLGizmosManager m_gizmos;
     mutable GLToolbar m_main_toolbar;
     mutable GLToolbar m_undoredo_toolbar;
-    mutable GLToolbar m_collapse_toolbar;
     ClippingPlane m_clipping_planes[2];
     mutable ClippingPlane m_camera_clipping_plane;
     bool m_use_clipping_planes;
@@ -584,7 +587,6 @@ public:
     void enable_selection(bool enable);
     void enable_main_toolbar(bool enable);
     void enable_undoredo_toolbar(bool enable);
-    void enable_collapse_toolbar(bool enable);
     void enable_dynamic_background(bool enable);
     void enable_labels(bool enable) { m_labels.enable(enable); }
 #if ENABLE_SLOPE_RENDERING

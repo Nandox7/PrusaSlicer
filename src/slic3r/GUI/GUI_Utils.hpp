@@ -24,6 +24,11 @@ class wxCheckBox;
 class wxTopLevelWindow;
 class wxRect;
 
+#if ENABLE_WX_3_1_3_DPI_CHANGED_EVENT
+#define wxVERSION_EQUAL_OR_GREATER_THAN(major, minor, release) ((wxMAJOR_VERSION > major) || ((wxMAJOR_VERSION == major) && (wxMINOR_VERSION > minor)) || ((wxMAJOR_VERSION == major) && (wxMINOR_VERSION == minor) && (wxRELEASE_NUMBER >= release)))
+#else
+#define wxVERSION_EQUAL_OR_GREATER_THAN(major, minor, release) 0
+#endif // ENABLE_WX_3_1_3_DPI_CHANGED_EVENT
 
 namespace Slic3r {
 namespace GUI {
@@ -51,6 +56,7 @@ enum { DPI_DEFAULT = 96 };
 int get_dpi_for_window(wxWindow *window);
 wxFont get_default_font_for_dpi(int dpi);
 
+#if !wxVERSION_EQUAL_OR_GREATER_THAN(3,1,3)
 struct DpiChangedEvent : public wxEvent {
     int dpi;
     wxRect rect;
@@ -66,6 +72,7 @@ struct DpiChangedEvent : public wxEvent {
 };
 
 wxDECLARE_EVENT(EVT_DPI_CHANGED_SLICER, DpiChangedEvent);
+#endif // !wxVERSION_EQUAL_OR_GREATER_THAN
 
 template<class P> class DPIAware : public P
 {
@@ -86,11 +93,29 @@ public:
         this->SetFont(m_normal_font);
 #endif
         // initialize default width_unit according to the width of the one symbol ("m") of the currently active font of this window.
+#if ENABLE_WX_3_1_3_DPI_CHANGED_EVENT
+        m_em_unit = std::max<size_t>(10, 10.0f * m_scale_factor);
+#else
         m_em_unit = std::max<size_t>(10, this->GetTextExtent("m").x - 1);
+#endif // ENABLE_WX_3_1_3_DPI_CHANGED_EVENT
 
 //        recalc_font();
 
-        this->Bind(EVT_DPI_CHANGED_SLICER, [this](const DpiChangedEvent &evt) {
+#if wxVERSION_EQUAL_OR_GREATER_THAN(3, 1, 3)
+        this->Bind(wxEVT_DPI_CHANGED, [this](wxDPIChangedEvent& evt) {
+            m_scale_factor = (float)evt.GetNewDPI().x / (float)DPI_DEFAULT;
+
+           m_new_font_point_size = get_default_font_for_dpi(evt.GetNewDPI().x).GetPointSize();
+
+           if (!m_can_rescale)
+                return;
+
+            if (is_new_scale_factor())
+                rescale(wxRect());
+
+            });
+#else
+        this->Bind(EVT_DPI_CHANGED_SLICER, [this](const DpiChangedEvent& evt) {
             m_scale_factor = (float)evt.dpi / (float)DPI_DEFAULT;
 
             m_new_font_point_size = get_default_font_for_dpi(evt.dpi).GetPointSize();
@@ -100,7 +125,8 @@ public:
 
             if (is_new_scale_factor())
                 rescale(evt.rect);
-        });
+            });
+#endif // wxMAJOR_VERSION
 
         this->Bind(wxEVT_MOVE_START, [this](wxMoveEvent& event)
         {
@@ -192,17 +218,23 @@ private:
     {
         this->Freeze();
 
+#if !wxVERSION_EQUAL_OR_GREATER_THAN(3, 1, 3)
         // rescale fonts of all controls
         scale_controls_fonts(this, m_new_font_point_size);
         // rescale current window font
         scale_win_font(this, m_new_font_point_size);
+#endif // wxMAJOR_VERSION
 
 
         // set normal application font as a current window font
         m_normal_font = this->GetFont();
 
         // update em_unit value for new window font
+#if ENABLE_WX_3_1_3_DPI_CHANGED_EVENT
+        m_em_unit = std::max<int>(10, 10.0f * m_scale_factor);
+#else
         m_em_unit = std::max<size_t>(10, this->GetTextExtent("m").x - 1);
+#endif // ENABLE_WX_3_1_3_DPI_CHANGED_EVENT
 
         // rescale missed controls sizes and images
         on_dpi_changed(suggested_rect);
@@ -341,7 +373,7 @@ public:
     static WindowMetrics from_window(wxTopLevelWindow *window);
     static boost::optional<WindowMetrics> deserialize(const std::string &str);
 
-    wxRect get_rect() const { return rect; }
+    const wxRect& get_rect() const { return rect; }
     bool get_maximized() const { return maximized; }
 
     void sanitize_for_display(const wxRect &screen_rect);

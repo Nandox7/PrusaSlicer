@@ -42,5 +42,20 @@
 // Enable rendering of objects colored by facets' slope
 #define ENABLE_SLOPE_RENDERING (1 && ENABLE_2_3_0_ALPHA1)
 
+// Enable rendering of objects using environment map
+#define ENABLE_ENVIRONMENT_MAP (1 && ENABLE_2_3_0_ALPHA1)
+
+// Enable smoothing of objects normals
+#define ENABLE_SMOOTH_NORMALS (0 && ENABLE_2_3_0_ALPHA1)
+
+// Enable error logging for OpenGL calls when SLIC3R_LOGLEVEL >= 5
+#define ENABLE_OPENGL_ERROR_LOGGING (1 && ENABLE_2_3_0_ALPHA1)
+
+// Enable built-in DPI changed event handler of wxWidgets 3.1.3
+#define ENABLE_WX_3_1_3_DPI_CHANGED_EVENT (1 && ENABLE_2_3_0_ALPHA1)
+
+// Enable changing application layout without the need to restart
+#define ENABLE_LAYOUT_NO_RESTART (1 && ENABLE_2_3_0_ALPHA1)
+
 
 #endif // _prusaslicer_technologies_h_

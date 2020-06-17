@@ -6,6 +6,7 @@
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/GUI_ObjectManipulation.hpp"
 #include "slic3r/GUI/PresetBundle.hpp"
+#include "slic3r/GUI/Plater.hpp"
 #include "slic3r/Utils/UndoRedo.hpp"
 
 #include "slic3r/GUI/Gizmos/GLGizmoMove.hpp"
@@ -16,6 +17,8 @@
 #include "slic3r/GUI/Gizmos/GLGizmoFdmSupports.hpp"
 #include "slic3r/GUI/Gizmos/GLGizmoCut.hpp"
 #include "slic3r/GUI/Gizmos/GLGizmoHollow.hpp"
+
+#include "libslic3r/Model.hpp"
 
 #include <wx/glcanvas.h>
 
@@ -1101,9 +1104,16 @@ void GLGizmosManager::activate_gizmo(EType type)
     }
 
     m_current = type;
-    m_common_gizmos_data->update(get_current()
-                           ? get_current()->get_requirements()
-                           : CommonGizmosDataID(0));
+
+    // Updating common data should be left to the update_data function, which
+    // is always called after this one. activate_gizmo can be called by undo/redo,
+    // when selection is not yet deserialized, so the common data would update
+    // incorrectly (or crash if relying on unempty selection). Undo/redo stack
+    // will also call update_data, after selection is restored.
+
+    //m_common_gizmos_data->update(get_current()
+    //                       ? get_current()->get_requirements()
+    //                       : CommonGizmosDataID(0));
 
     if (type != Undefined)
         m_gizmos[type]->set_state(GLGizmoBase::On);
